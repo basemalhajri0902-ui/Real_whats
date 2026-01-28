@@ -21,58 +21,46 @@ async function handleIncomingMessage(req, res) {
     try {
         console.log('📨 Webhook received:', JSON.stringify(req.body, null, 2));
 
-        // wasenderapi.com format - extract message data
         const data = req.body;
+        let from, body;
 
-        // Try different payload formats
-        let from, body, messageType;
-
-        // Format 1: Direct message object
-        if (data.key && data.message) {
-            from = data.key.remoteJid?.replace('@s.whatsapp.net', '') || data.key.from;
-            body = data.message.conversation ||
-                data.message.extendedTextMessage?.text ||
-                data.message.text ||
+        // wasenderapi.com format: data.messages structure
+        if (data.data && data.data.messages) {
+            const msg = data.data.messages;
+            // Get phone from cleanedSenderPn or extract from senderPn
+            from = msg.key?.cleanedSenderPn ||
+                msg.key?.senderPn?.replace('@s.whatsapp.net', '') ||
+                msg.key?.remoteJid?.replace('@lid', '').replace('@s.whatsapp.net', '');
+            // Get message text
+            body = msg.messageBody ||
+                msg.message?.conversation ||
+                msg.message?.extendedTextMessage?.text ||
                 '';
-            messageType = 'text';
+            console.log(`✅ Parsed wasenderapi format - From: ${from}, Body: ${body}`);
         }
-        // Format 2: Nested in data object
-        else if (data.data && data.data.key) {
-            from = data.data.key.remoteJid?.replace('@s.whatsapp.net', '') || data.data.key.from;
-            body = data.data.message?.conversation ||
-                data.data.message?.extendedTextMessage?.text ||
-                '';
-            messageType = 'text';
+        // Fallback formats
+        else if (data.key && data.message) {
+            from = data.key.remoteJid?.replace('@s.whatsapp.net', '');
+            body = data.message.conversation || data.message.extendedTextMessage?.text || '';
         }
-        // Format 3: Simple format
         else if (data.from || data.sender || data.phone) {
             from = data.from || data.sender || data.phone;
             body = data.body || data.message || data.text || '';
-            messageType = data.messageType || data.type || 'text';
-        }
-        // Format 4: Messages array
-        else if (data.messages && data.messages[0]) {
-            const msg = data.messages[0];
-            from = msg.from || msg.key?.remoteJid?.replace('@s.whatsapp.net', '');
-            body = msg.body || msg.text || msg.message?.conversation || '';
-            messageType = 'text';
         }
         else {
-            console.log('⚠️ Unknown payload format, trying to extract...');
-            from = data.from || data.sender || data.remoteJid || '';
-            body = data.body || data.text || data.message || '';
+            console.log('⚠️ Unknown payload format');
+            return res.status(200).json({ status: 'ignored', reason: 'unknown format' });
         }
 
-        // التحقق من صحة البيانات
+        // Skip if no valid data
         if (!from || !body) {
-            console.log('⚠️ No valid message data found in payload');
+            console.log('⚠️ No valid from/body found');
             return res.status(200).json({ status: 'ignored', reason: 'no message data' });
         }
 
-        // تنظيف رقم الهاتف
+        // Clean phone number
         const phone = cleanPhoneNumber(from);
-
-        console.log(`📩 New message from ${phone}: ${body.substring(0, 100)}...`);
+        console.log(`📩 New message from ${phone}: ${body}`);
 
         // معالجة الرسالة بواسطة البوت
         const response = await botLogic.handleMessage(phone, body, null);
