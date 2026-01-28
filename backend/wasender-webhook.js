@@ -19,36 +19,72 @@ const WASENDER_BASE_URL = `${WASENDER_API_URL}/api/v1/instances/${WASENDER_INSTA
  */
 async function handleIncomingMessage(req, res) {
     try {
-        const {
-            from,           // رقم المرسل
-            body,           // نص الرسالة
-            mediaUrl,       // رابط الوسائط (إن وجد)
-            messageType,    // نوع الرسالة: text, image, video, document
-            timestamp,      // وقت الإرسال
-            instanceId      // معرف الـ instance
-        } = req.body;
+        console.log('📨 Webhook received:', JSON.stringify(req.body, null, 2));
 
-        // التحقق من صحة الطلب
+        // wasenderapi.com format - extract message data
+        const data = req.body;
+
+        // Try different payload formats
+        let from, body, messageType;
+
+        // Format 1: Direct message object
+        if (data.key && data.message) {
+            from = data.key.remoteJid?.replace('@s.whatsapp.net', '') || data.key.from;
+            body = data.message.conversation ||
+                data.message.extendedTextMessage?.text ||
+                data.message.text ||
+                '';
+            messageType = 'text';
+        }
+        // Format 2: Nested in data object
+        else if (data.data && data.data.key) {
+            from = data.data.key.remoteJid?.replace('@s.whatsapp.net', '') || data.data.key.from;
+            body = data.data.message?.conversation ||
+                data.data.message?.extendedTextMessage?.text ||
+                '';
+            messageType = 'text';
+        }
+        // Format 3: Simple format
+        else if (data.from || data.sender || data.phone) {
+            from = data.from || data.sender || data.phone;
+            body = data.body || data.message || data.text || '';
+            messageType = data.messageType || data.type || 'text';
+        }
+        // Format 4: Messages array
+        else if (data.messages && data.messages[0]) {
+            const msg = data.messages[0];
+            from = msg.from || msg.key?.remoteJid?.replace('@s.whatsapp.net', '');
+            body = msg.body || msg.text || msg.message?.conversation || '';
+            messageType = 'text';
+        }
+        else {
+            console.log('⚠️ Unknown payload format, trying to extract...');
+            from = data.from || data.sender || data.remoteJid || '';
+            body = data.body || data.text || data.message || '';
+        }
+
+        // التحقق من صحة البيانات
         if (!from || !body) {
-            console.log('Invalid webhook payload:', req.body);
-            return res.status(400).json({ error: 'Invalid payload' });
+            console.log('⚠️ No valid message data found in payload');
+            return res.status(200).json({ status: 'ignored', reason: 'no message data' });
         }
 
         // تنظيف رقم الهاتف
         const phone = cleanPhoneNumber(from);
 
-        console.log(`📩 New message from ${phone}: ${body.substring(0, 50)}...`);
+        console.log(`📩 New message from ${phone}: ${body.substring(0, 100)}...`);
 
         // معالجة الرسالة بواسطة البوت
-        const response = await botLogic.handleMessage(phone, body, mediaUrl);
+        const response = await botLogic.handleMessage(phone, body, null);
 
         // إرسال الرد
-        if (response.text) {
+        if (response && response.text) {
+            console.log(`📤 Sending reply to ${phone}: ${response.text.substring(0, 50)}...`);
             await sendWhatsAppMessage(phone, response.text);
         }
 
         // إذا كان هناك إشعار للمسوق
-        if (response.notifyMarketer) {
+        if (response && response.notifyMarketer) {
             await sendWhatsAppMessage(
                 response.notifyMarketer.phone,
                 response.notifyMarketer.message
@@ -58,8 +94,8 @@ async function handleIncomingMessage(req, res) {
         res.status(200).json({ success: true });
 
     } catch (error) {
-        console.error('Webhook error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('❌ Webhook error:', error);
+        res.status(200).json({ error: 'Internal error', message: error.message });
     }
 }
 
