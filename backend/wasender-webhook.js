@@ -89,6 +89,7 @@ async function handleIncomingMessage(req, res) {
 
 /**
  * إرسال رسالة واتساب عبر Wasender
+ * Updated: 2026-01-28 18:10 - Fixed API endpoint
  */
 async function sendWhatsAppMessage(to, message, mediaUrl = null) {
     try {
