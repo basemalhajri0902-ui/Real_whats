@@ -8,6 +8,31 @@
 const { supabase } = require('./supabase-client');
 
 // ========================================
+// دالة توحيد الأرقام العربية والإنجليزية
+// ========================================
+function normalizeArabicNumbers(text) {
+    if (!text) return text;
+
+    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+    let normalized = text.toString();
+
+    // تحويل الأرقام العربية إلى إنجليزية
+    for (let i = 0; i < arabicNumbers.length; i++) {
+        normalized = normalized.replace(new RegExp(arabicNumbers[i], 'g'), englishNumbers[i]);
+    }
+
+    // تحويل الأرقام الفارسية أيضاً
+    const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    for (let i = 0; i < persianNumbers.length; i++) {
+        normalized = normalized.replace(new RegExp(persianNumbers[i], 'g'), englishNumbers[i]);
+    }
+
+    return normalized;
+}
+
+// ========================================
 // حالات المحادثة
 // ========================================
 const CONVERSATION_STATES = {
@@ -745,7 +770,8 @@ class BotLogic {
      * توليد الرد المناسب
      */
     async generateResponse(customer, message, mediaUrl) {
-        const text = message.toLowerCase().trim();
+        // توحيد الأرقام العربية والإنجليزية
+        const text = normalizeArabicNumbers(message).toLowerCase().trim();
         const state = customer.session_state || {};
         const currentState = state.state || CONVERSATION_STATES.WELCOME;
 
