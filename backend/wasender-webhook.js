@@ -94,14 +94,16 @@ async function sendWhatsAppMessage(to, message, mediaUrl = null) {
     try {
         const phone = cleanPhoneNumber(to);
 
-        // Wasender API format
+        // wasenderapi.com correct format: POST /api/send-message
         const payload = {
-            number: phone,
+            to: phone,
             text: message
         };
 
+        console.log(`📤 Sending to wasenderapi.com - Phone: ${phone}`);
+
         const response = await axios.post(
-            `https://www.wasenderapi.com/api/send-text/${WASENDER_INSTANCE_ID}`,
+            'https://www.wasenderapi.com/api/send-message',
             payload,
             {
                 headers: {
@@ -111,7 +113,7 @@ async function sendWhatsAppMessage(to, message, mediaUrl = null) {
             }
         );
 
-        console.log(`✅ Message sent to ${to}`);
+        console.log(`✅ Message sent to ${to}`, response.data);
         return response.data;
 
     } catch (error) {
