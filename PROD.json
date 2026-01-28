@@ -1,0 +1,1060 @@
+{
+  "project_info": {
+    "name": "RealEstate TikTok System",
+    "version": "1.0.0",
+    "start_date": "2026-01-27",
+    "target_launch": "2026-04-27",
+    "current_phase": 1
+  },
+  
+  "phases": [
+    {
+      "id": 1,
+      "name": "MVP - Core Features",
+      "duration": "4 weeks",
+      "description": "بناء النسخة الأولية القابلة للإطلاق",
+      "status": "in_progress"
+    },
+    {
+      "id": 2,
+      "name": "AI & Advanced Features",
+      "duration": "3 weeks",
+      "description": "إضافة الذكاء الاصطناعي والمميزات المتقدمة",
+      "status": "pending"
+    },
+    {
+      "id": 3,
+      "name": "Enterprise & Scale",
+      "duration": "2 weeks",
+      "description": "مميزات الشركات والتحسينات للـ Scale",
+      "status": "pending"
+    }
+  ],
+  
+  "tasks": [
+    {
+      "id": "SETUP-001",
+      "phase": 1,
+      "category": "Setup",
+      "title": "Project Initialization & Environment Setup",
+      "description": "إعداد بيئة المشروع الكاملة",
+      "priority": "P0",
+      "estimated_hours": 2,
+      "completed": false,
+      "dependencies": [],
+      "technical_details": {
+        "steps": [
+          "إنشاء Git repository",
+          "إعداد package.json للـ Backend و Frontend",
+          "تثبيت Dependencies الأساسية",
+          "إعداد TypeScript configs",
+          "إعداد ESLint و Prettier",
+          "إنشاء .env.example files",
+          "إعداد Docker و docker-compose.yml"
+        ],
+        "deliverables": [
+          "backend/package.json مع dependencies",
+          "frontend/package.json مع dependencies",
+          "tsconfig.json للمشروعين",
+          ".eslintrc.js و .prettierrc",
+          "docker-compose.yml",
+          "README.md بتعليمات Setup"
+        ]
+      },
+      "acceptance_criteria": [
+        "npm install يعمل بدون أخطاء",
+        "docker-compose up يشغل البيئة",
+        "ESLint و Prettier مفعّلين"
+      ]
+    },
+    
+    {
+      "id": "DB-001",
+      "phase": 1,
+      "category": "Database",
+      "title": "Database Schema Design",
+      "description": "تصميم schema كامل لقاعدة البيانات",
+      "priority": "P0",
+      "estimated_hours": 4,
+      "completed": false,
+      "dependencies": ["SETUP-001"],
+      "technical_details": {
+        "tables_required": [
+          "users (id, email, phone, password_hash, role, created_at, updated_at, deleted_at)",
+          "user_profiles (user_id, full_name, avatar_url, bio, city, preferences_json)",
+          "properties (id, user_id, title, description, price, property_type, area, rooms, bathrooms, features_json, location_lat, location_lng, status, created_at)",
+          "property_media (id, property_id, media_type, url, order, is_primary)",
+          "property_videos (id, property_id, video_url, thumbnail_url, duration, video_type, resolution, views_count)",
+          "bookings (id, property_id, user_id, agent_id, scheduled_at, status, notes)",
+          "favorites (user_id, property_id, created_at)",
+          "comments (id, property_id, user_id, content, created_at)",
+          "user_interactions (user_id, property_id, interaction_type, duration_seconds, created_at)",
+          "companies (id, name, logo_url, license_number, created_at)",
+          "company_members (company_id, user_id, role, commission_rate, joined_at)",
+          "notifications (id, user_id, type, content, read, created_at)"
+        ],
+        "indexes": [
+          "users(email), users(phone)",
+          "properties(user_id), properties(status), properties(property_type)",
+          "property_videos(property_id)",
+          "bookings(agent_id), bookings(scheduled_at)",
+          "user_interactions(user_id), user_interactions(property_id)"
+        ],
+        "relationships": "استخدم Foreign Keys لضمان Data Integrity"
+      },
+      "acceptance_criteria": [
+        "Prisma schema file كامل",
+        "All tables مع proper data types",
+        "Foreign keys و indexes محددة",
+        "Soft delete (deleted_at) على الجداول المناسبة"
+      ]
+    },
+    
+    {
+      "id": "DB-002",
+      "phase": 1,
+      "category": "Database",
+      "title": "Database Migrations & Seed Data",
+      "description": "إنشاء migrations وبيانات تجريبية",
+      "priority": "P0",
+      "estimated_hours": 2,
+      "completed": false,
+      "dependencies": ["DB-001"],
+      "technical_details": {
+        "steps": [
+          "إنشاء Prisma migrations",
+          "تشغيل migrations على database",
+          "إنشاء seed script لبيانات تجريبية",
+          "إضافة 5-10 مستخدمين تجريبيين",
+          "إضافة 20-30 عقار تجريبي",
+          "إضافة فيديوهات placeholder"
+        ],
+        "seed_data": [
+          "3 users بدور 'client'",
+          "3 users بدور 'agent'",
+          "1 user بدور 'admin'",
+          "1 company مع 2 agents",
+          "Properties من أنواع مختلفة",
+          "Bookings و favorites و comments عينات"
+        ]
+      },
+      "acceptance_criteria": [
+        "npx prisma migrate dev يعمل",
+        "npx prisma db seed ينفذ بنجاح",
+        "Database ممتلئة ببيانات تجريبية"
+      ]
+    },
+    
+    {
+      "id": "AUTH-001",
+      "phase": 1,
+      "category": "Authentication",
+      "title": "User Registration & Login",
+      "description": "نظام التسجيل والدخول",
+      "priority": "P0",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["DB-002"],
+      "technical_details": {
+        "endpoints": [
+          "POST /api/v1/auth/register - التسجيل",
+          "POST /api/v1/auth/login - تسجيل الدخول",
+          "POST /api/v1/auth/refresh - تجديد الـ token",
+          "POST /api/v1/auth/logout - تسجيل الخروج",
+          "GET /api/v1/auth/me - الحصول على بيانات المستخدم الحالي"
+        ],
+        "validation": [
+          "Email format validation",
+          "Phone number validation (Saudi format)",
+          "Password strength (min 8 chars, 1 uppercase, 1 number)",
+          "Duplicate email/phone check"
+        ],
+        "security": [
+          "bcrypt لتشفير كلمات المرور (cost: 12)",
+          "JWT tokens (access: 15m, refresh: 7d)",
+          "Rate limiting: 5 attempts per 15 min",
+          "XSS و SQL injection protection"
+        ],
+        "response_example": {
+          "success": true,
+          "data": {
+            "user": {
+              "id": "uuid",
+              "email": "user@example.com",
+              "role": "client"
+            },
+            "tokens": {
+              "access_token": "jwt...",
+              "refresh_token": "jwt..."
+            }
+          }
+        }
+      },
+      "acceptance_criteria": [
+        "يمكن التسجيل بـ email و phone",
+        "Login يعيد JWT tokens",
+        "Refresh token يعمل",
+        "Password hashing يعمل",
+        "Validation errors واضحة"
+      ]
+    },
+    
+    {
+      "id": "AUTH-002",
+      "phase": 1,
+      "category": "Authentication",
+      "title": "JWT Middleware & Authorization",
+      "description": "Middleware للتحقق من الصلاحيات",
+      "priority": "P0",
+      "estimated_hours": 3,
+      "completed": false,
+      "dependencies": ["AUTH-001"],
+      "technical_details": {
+        "middlewares": [
+          "authenticateToken - التحقق من وجود token صالح",
+          "requireRole(['agent', 'admin']) - التحقق من الدور",
+          "optionalAuth - يسمح بالوصول مع أو بدون token"
+        ],
+        "implementation": [
+          "استخراج token من Authorization header",
+          "التحقق من صحة التوقيع",
+          "التحقق من expiration",
+          "إضافة user إلى req.user",
+          "معالجة الأخطاء (401, 403)"
+        ]
+      },
+      "acceptance_criteria": [
+        "Protected routes تطلب token",
+        "Invalid token يعيد 401",
+        "Expired token يعيد 401",
+        "Wrong role يعيد 403"
+      ]
+    },
+    
+    {
+      "id": "API-001",
+      "phase": 1,
+      "category": "API",
+      "title": "Property CRUD API",
+      "description": "API لإدارة العقارات",
+      "priority": "P0",
+      "estimated_hours": 8,
+      "completed": false,
+      "dependencies": ["AUTH-002"],
+      "technical_details": {
+        "endpoints": [
+          "POST /api/v1/properties - إنشاء عقار (agents only)",
+          "GET /api/v1/properties - قائمة العقارات (مع pagination و filters)",
+          "GET /api/v1/properties/:id - تفاصيل عقار",
+          "PUT /api/v1/properties/:id - تعديل عقار (owner/admin only)",
+          "DELETE /api/v1/properties/:id - حذف عقار (soft delete)",
+          "GET /api/v1/properties/my - عقارات المسوق الحالي"
+        ],
+        "filters": [
+          "?property_type=villa,apartment",
+          "?min_price=500000&max_price=2000000",
+          "?city=riyadh",
+          "?rooms=3,4",
+          "?status=active"
+        ],
+        "pagination": "?page=1&limit=20",
+        "validation": [
+          "Required: title, price, property_type, location",
+          "Price > 0",
+          "Valid property_type enum",
+          "Valid coordinates"
+        ],
+        "permissions": [
+          "Create: agents, companies",
+          "Update/Delete: owner أو admin",
+          "View: الكل (حتى بدون تسجيل دخول)"
+        ]
+      },
+      "acceptance_criteria": [
+        "يمكن إنشاء عقار بكل البيانات",
+        "Pagination يعمل صح",
+        "Filters تعطي نتائج دقيقة",
+        "Permissions محترمة",
+        "Validation errors واضحة"
+      ]
+    },
+    
+    {
+      "id": "MEDIA-001",
+      "phase": 1,
+      "category": "Media",
+      "title": "File Upload Service",
+      "description": "خدمة رفع الصور والفيديوهات",
+      "priority": "P0",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["API-001"],
+      "technical_details": {
+        "endpoints": [
+          "POST /api/v1/upload/image - رفع صورة",
+          "POST /api/v1/upload/video - رفع فيديو",
+          "DELETE /api/v1/upload/:id - حذف ملف"
+        ],
+        "storage": "AWS S3 أو Cloudflare R2",
+        "validation": [
+          "Images: jpg, png, webp - max 5MB",
+          "Videos: mp4, mov - max 100MB",
+          "التحقق من نوع الملف (MIME type)",
+          "مسح الـ metadata الحساسة"
+        ],
+        "processing": [
+          "Images: تحجيم لعدة أحجام (thumbnail, medium, large)",
+          "Videos: استخراج thumbnail",
+          "إنشاء unique filename (UUID)",
+          "تخزين URL في database"
+        ],
+        "libraries": [
+          "multer - لاستقبال الملفات",
+          "sharp - لمعالجة الصور",
+          "fluent-ffmpeg - لاستخراج thumbnails"
+        ]
+      },
+      "acceptance_criteria": [
+        "يمكن رفع صور",
+        "يمكن رفع فيديوهات",
+        "الملفات محفوظة على S3",
+        "URLs صحيحة في database",
+        "Validation يمنع ملفات غير صحيحة"
+      ]
+    },
+    
+    {
+      "id": "API-002",
+      "phase": 1,
+      "category": "API",
+      "title": "Property Video Management",
+      "description": "إدارة فيديوهات العقارات",
+      "priority": "P0",
+      "estimated_hours": 4,
+      "completed": false,
+      "dependencies": ["MEDIA-001"],
+      "technical_details": {
+        "endpoints": [
+          "POST /api/v1/properties/:id/videos - إضافة فيديو لعقار",
+          "GET /api/v1/properties/:id/videos - قائمة فيديوهات العقار",
+          "PUT /api/v1/properties/:id/videos/:videoId - تعديل فيديو",
+          "DELETE /api/v1/properties/:id/videos/:videoId - حذف فيديو"
+        ],
+        "video_types": [
+          "reel - فيديو قصير (15-60 ثانية)",
+          "tour_360 - فيديو 360 درجة",
+          "tour_4k - جولة كاملة بجودة عالية"
+        ],
+        "metadata": [
+          "duration (ثواني)",
+          "resolution (e.g., '1080p', '4k')",
+          "thumbnail_url",
+          "views_count",
+          "is_primary (boolean)"
+        ]
+      },
+      "acceptance_criteria": [
+        "يمكن إضافة فيديوهات بأنواع مختلفة",
+        "Metadata محفوظ صح",
+        "يمكن تحديد primary video",
+        "Views count يتتبع"
+      ]
+    },
+    
+    {
+      "id": "API-003",
+      "phase": 1,
+      "category": "API",
+      "title": "Property Feed API",
+      "description": "Feed للعقارات (TikTok style)",
+      "priority": "P0",
+      "estimated_hours": 5,
+      "completed": false,
+      "dependencies": ["API-002"],
+      "technical_details": {
+        "endpoint": "GET /api/v1/feed",
+        "description": "إرجاع قائمة عقارات للعرض بنمط TikTok",
+        "logic": [
+          "إذا المستخدم مسجل دخول: استخدم preferences",
+          "إذا غير مسجل: عشوائي مع تفضيل الأحدث",
+          "Exclude العقارات اللي شافها قبل (إذا logged in)",
+          "Sort by: recency, views, engagement"
+        ],
+        "query_params": [
+          "?cursor=last_property_id (للـ infinite scroll)",
+          "?limit=10"
+        ],
+        "response": [
+          "Array من properties",
+          "كل property معه: primary_video, images, agent_info",
+          "next_cursor للصفحة التالية"
+        ],
+        "performance": "استخدم indexes و limit results"
+      },
+      "acceptance_criteria": [
+        "Feed يرجع عقارات",
+        "Cursor pagination يعمل",
+        "يستثني العقارات المشاهدة",
+        "Response time < 200ms"
+      ]
+    },
+    
+    {
+      "id": "API-004",
+      "phase": 1,
+      "category": "API",
+      "title": "Favorites & Bookmarks",
+      "description": "المفضلة والحفظ",
+      "priority": "P1",
+      "estimated_hours": 3,
+      "completed": false,
+      "dependencies": ["API-003"],
+      "technical_details": {
+        "endpoints": [
+          "POST /api/v1/favorites/:propertyId - إضافة للمفضلة",
+          "DELETE /api/v1/favorites/:propertyId - إزالة من المفضلة",
+          "GET /api/v1/favorites - قائمة المفضلة",
+          "GET /api/v1/properties/:id/is-favorite - check إذا في المفضلة"
+        ],
+        "database": "جدول favorites (user_id, property_id, created_at)",
+        "validation": [
+          "Property exists",
+          "User authenticated",
+          "لا duplicate favorites"
+        ]
+      },
+      "acceptance_criteria": [
+        "يمكن إضافة/إزالة من المفضلة",
+        "قائمة المفضلة تعمل",
+        "No duplicates"
+      ]
+    },
+    
+    {
+      "id": "API-005",
+      "phase": 1,
+      "category": "API",
+      "title": "Search & Filters",
+      "description": "البحث والفلاتر المتقدمة",
+      "priority": "P1",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["API-003"],
+      "technical_details": {
+        "endpoint": "GET /api/v1/properties/search",
+        "filters": [
+          "?q=search_term (بحث في title و description)",
+          "?property_type=villa,apartment",
+          "?city=riyadh",
+          "?min_price=X&max_price=Y",
+          "?min_area=X&max_area=Y",
+          "?rooms=3,4,5",
+          "?bathrooms=2,3",
+          "?features=pool,garden,parking (JSONB query)",
+          "?sort=price_asc|price_desc|newest|popular"
+        ],
+        "implementation": [
+          "استخدم Prisma where clauses",
+          "Full-text search على title & description",
+          "JSONB query للـ features",
+          "Combine filters بـ AND logic"
+        ],
+        "performance": [
+          "استخدم database indexes",
+          "Cache popular searches (Redis)",
+          "Limit results"
+        ]
+      },
+      "acceptance_criteria": [
+        "كل الفلاتر تعمل",
+        "البحث النصي يعمل",
+        "Sorting يعمل",
+        "Response time < 300ms"
+      ]
+    },
+    
+    {
+      "id": "API-006",
+      "phase": 1,
+      "category": "API",
+      "title": "Booking System",
+      "description": "نظام الحجوزات",
+      "priority": "P1",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["API-001"],
+      "technical_details": {
+        "endpoints": [
+          "POST /api/v1/bookings - إنشاء حجز",
+          "GET /api/v1/bookings - قائمة حجوزات المستخدم",
+          "GET /api/v1/bookings/:id - تفاصيل حجز",
+          "PUT /api/v1/bookings/:id - تعديل حجز",
+          "DELETE /api/v1/bookings/:id - إلغاء حجز",
+          "GET /api/v1/agent/bookings - حجوزات المسوق"
+        ],
+        "booking_statuses": [
+          "pending - بانتظار تأكيد المسوق",
+          "confirmed - مؤكد",
+          "completed - تم",
+          "cancelled - ملغي"
+        ],
+        "validation": [
+          "التاريخ في المستقبل",
+          "المسوق متاح في هذا الوقت",
+          "Property exists و active"
+        ],
+        "notifications": [
+          "إشعار للمسوق عند حجز جديد",
+          "إشعار للعميل عند التأكيد/الإلغاء",
+          "تذكير قبل 24 ساعة",
+          "تذكير قبل ساعة"
+        ]
+      },
+      "acceptance_criteria": [
+        "يمكن إنشاء حجز",
+        "المسوق يشوف حجوزاته",
+        "يمكن تأكيد/إلغاء",
+        "Notifications تُرسل"
+      ]
+    },
+    
+    {
+      "id": "API-007",
+      "phase": 1,
+      "category": "API",
+      "title": "Comments System",
+      "description": "نظام التعليقات",
+      "priority": "P2",
+      "estimated_hours": 4,
+      "completed": false,
+      "dependencies": ["API-001"],
+      "technical_details": {
+        "endpoints": [
+          "POST /api/v1/properties/:id/comments - إضافة تعليق",
+          "GET /api/v1/properties/:id/comments - قائمة التعليقات",
+          "PUT /api/v1/comments/:id - تعديل تعليق (owner only)",
+          "DELETE /api/v1/comments/:id - حذف تعليق (owner/admin)"
+        ],
+        "features": [
+          "Nested comments (replies) - optional للـ MVP",
+          "Character limit: 500",
+          "Mentions @username - optional",
+          "Moderation flag"
+        ],
+        "validation": [
+          "Content not empty",
+          "Max 500 characters",
+          "User authenticated",
+          "Property exists"
+        ]
+      },
+      "acceptance_criteria": [
+        "يمكن إضافة تعليق",
+        "التعليقات تظهر بالترتيب الزمني",
+        "يمكن حذف/تعديل (حسب الصلاحيات)"
+      ]
+    },
+    
+    {
+      "id": "API-008",
+      "phase": 1,
+      "category": "API",
+      "title": "User Profile Management",
+      "description": "إدارة الملف الشخصي",
+      "priority": "P1",
+      "estimated_hours": 4,
+      "completed": false,
+      "dependencies": ["AUTH-002", "MEDIA-001"],
+      "technical_details": {
+        "endpoints": [
+          "GET /api/v1/profile - الحصول على الملف الشخصي",
+          "PUT /api/v1/profile - تحديث الملف الشخصي",
+          "PUT /api/v1/profile/avatar - تحديث الصورة الشخصية",
+          "PUT /api/v1/profile/password - تغيير كلمة المرور",
+          "PUT /api/v1/profile/preferences - تحديث التفضيلات"
+        ],
+        "editable_fields": [
+          "full_name",
+          "bio",
+          "city",
+          "avatar_url",
+          "preferences (JSONB): property_types, price_range, cities, etc."
+        ],
+        "validation": [
+          "full_name: 3-50 characters",
+          "bio: max 500 characters",
+          "Password: min 8 chars if changing"
+        ]
+      },
+      "acceptance_criteria": [
+        "يمكن عرض وتعديل الملف الشخصي",
+        "تحديث الصورة يعمل",
+        "تغيير كلمة المرور يعمل مع re-hashing"
+      ]
+    },
+    
+    {
+      "id": "API-009",
+      "phase": 1,
+      "category": "API",
+      "title": "Agent Profile & Stats",
+      "description": "صفحة المسوق والإحصائيات",
+      "priority": "P1",
+      "estimated_hours": 5,
+      "completed": false,
+      "dependencies": ["API-008"],
+      "technical_details": {
+        "endpoints": [
+          "GET /api/v1/agents/:id - معلومات المسوق",
+          "GET /api/v1/agents/:id/properties - عقارات المسوق",
+          "GET /api/v1/agents/:id/stats - إحصائيات المسوق"
+        ],
+        "agent_info": [
+          "full_name, avatar, bio",
+          "rating (average من ratings)",
+          "total_properties",
+          "total_sales",
+          "years_of_experience",
+          "specializations (أنواع العقارات)",
+          "areas_covered (المناطق)"
+        ],
+        "stats": [
+          "total_views على عقاراته",
+          "total_favorites",
+          "total_bookings",
+          "response_rate (نسبة الرد على الرسائل)",
+          "average_response_time"
+        ]
+      },
+      "acceptance_criteria": [
+        "صفحة المسوق تعرض كل المعلومات",
+        "الإحصائيات دقيقة",
+        "يمكن عرض عقارات المسوق"
+      ]
+    },
+    
+    {
+      "id": "NOTIF-001",
+      "phase": 1,
+      "category": "Notifications",
+      "title": "Notification System",
+      "description": "نظام الإشعارات",
+      "priority": "P1",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["API-006"],
+      "technical_details": {
+        "types": [
+          "booking_created - حجز جديد",
+          "booking_confirmed - تأكيد حجز",
+          "booking_cancelled - إلغاء حجز",
+          "booking_reminder - تذكير بحجز",
+          "comment_added - تعليق جديد",
+          "property_price_drop - انخفاض السعر",
+          "new_property_match - عقار جديد يطابق التفضيلات"
+        ],
+        "channels": [
+          "in_app - داخل التطبيق (database)",
+          "push - إشعارات push (Firebase)",
+          "email - بريد إلكتروني (SendGrid) - optional للـ MVP",
+          "sms - رسائل نصية (Twilio) - optional للـ MVP"
+        ],
+        "endpoints": [
+          "GET /api/v1/notifications - قائمة الإشعارات",
+          "PUT /api/v1/notifications/:id/read - وضع علامة مقروء",
+          "PUT /api/v1/notifications/read-all - وضع علامة على الكل",
+          "DELETE /api/v1/notifications/:id - حذف إشعار"
+        ],
+        "implementation": [
+          "Service layer للإشعارات",
+          "Queue system (Bull/BullMQ) للإشعارات المؤجلة",
+          "Template system للرسائل"
+        ]
+      },
+      "acceptance_criteria": [
+        "الإشعارات تُحفظ في database",
+        "API لعرض وإدارة الإشعارات يعمل",
+        "يمكن وضع علامة مقروء",
+        "Push notifications تُرسل (Firebase)"
+      ]
+    },
+    
+    {
+      "id": "FRONT-001",
+      "phase": 1,
+      "category": "Frontend",
+      "title": "Next.js Project Setup",
+      "description": "إعداد مشروع Frontend",
+      "priority": "P0",
+      "estimated_hours": 3,
+      "completed": false,
+      "dependencies": ["SETUP-001"],
+      "technical_details": {
+        "steps": [
+          "إنشاء Next.js 14 project (App Router)",
+          "إعداد Tailwind CSS",
+          "إعداد TypeScript",
+          "تثبيت shadcn/ui",
+          "إعداد Zustand للـ state management",
+          "إعداد Axios + TanStack Query",
+          "إعداد folder structure"
+        ],
+        "folder_structure": [
+          "app/ - Pages (App Router)",
+          "components/ - Reusable components",
+          "lib/ - Utilities & helpers",
+          "hooks/ - Custom hooks",
+          "services/ - API calls",
+          "store/ - Zustand stores",
+          "types/ - TypeScript types",
+          "styles/ - Global styles"
+        ]
+      },
+      "acceptance_criteria": [
+        "npm run dev يشتغل",
+        "Tailwind CSS يعمل",
+        "shadcn/ui components جاهزة",
+        "Folder structure منظم"
+      ]
+    },
+    
+    {
+      "id": "FRONT-002",
+      "phase": 1,
+      "category": "Frontend",
+      "title": "Authentication Pages",
+      "description": "صفحات التسجيل والدخول",
+      "priority": "P0",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["FRONT-001", "AUTH-001"],
+      "technical_details": {
+        "pages": [
+          "/login - صفحة تسجيل الدخول",
+          "/register - صفحة التسجيل",
+          "/register/role - اختيار الدور (client/agent)"
+        ],
+        "features": [
+          "Form validation (React Hook Form + Zod)",
+          "Error handling و display",
+          "Loading states",
+          "حفظ tokens في localStorage/cookies",
+          "Redirect بعد النجاح",
+          "Social login buttons (UI only للـ MVP)"
+        ],
+        "components": [
+          "LoginForm",
+          "RegisterForm",
+          "RoleSelector",
+          "AuthLayout"
+        ]
+      },
+      "acceptance_criteria": [
+        "يمكن التسجيل من UI",
+        "يمكن تسجيل الدخول",
+        "Validation يعمل",
+        "Tokens محفوظة",
+        "Redirect يعمل"
+      ]
+    },
+    
+    {
+      "id": "FRONT-003",
+      "phase": 1,
+      "category": "Frontend",
+      "title": "Property Feed (TikTok Style)",
+      "description": "الصفحة الرئيسية - Feed",
+      "priority": "P0",
+      "estimated_hours": 10,
+      "completed": false,
+      "dependencies": ["FRONT-002", "API-003"],
+      "technical_details": {
+        "page": "/feed أو /",
+        "features": [
+          "Fullscreen video player",
+          "Swipe gesture (up/down) للتنقل",
+          "Auto-play video عند الدخول للشاشة",
+          "Pause عند الخروج",
+          "Overlay مع معلومات العقار",
+          "أزرار: Like, Comment, Share, Details",
+          "Infinite scroll (pagination)",
+          "Loading skeleton"
+        ],
+        "libraries": [
+          "react-swipeable أو custom gestures",
+          "react-player للفيديو",
+          "Intersection Observer للـ auto-play"
+        ],
+        "components": [
+          "VideoFeed",
+          "VideoCard",
+          "VideoPlayer",
+          "PropertyOverlay",
+          "ActionButtons"
+        ],
+        "performance": [
+          "Lazy load videos",
+          "Preload next 2 videos",
+          "Optimize video playback"
+        ]
+      },
+      "acceptance_criteria": [
+        "Feed يعرض فيديوهات",
+        "Swipe gesture يعمل",
+        "Auto-play يعمل",
+        "Action buttons تعمل",
+        "Performance جيد"
+      ]
+    },
+    
+    {
+      "id": "FRONT-004",
+      "phase": 1,
+      "category": "Frontend",
+      "title": "Property Details Page",
+      "description": "صفحة تفاصيل العقار",
+      "priority": "P0",
+      "estimated_hours": 8,
+      "completed": false,
+      "dependencies": ["FRONT-003", "API-001"],
+      "technical_details": {
+        "page": "/properties/[id]",
+        "sections": [
+          "Media Gallery (photos + videos)",
+          "Property Information",
+          "Features & Amenities",
+          "Location Map (Google Maps)",
+          "Agent Information",
+          "Comments Section",
+          "Similar Properties"
+        ],
+        "components": [
+          "MediaGallery",
+          "PropertyInfo",
+          "FeaturesList",
+          "LocationMap",
+          "AgentCard",
+          "CommentsSection",
+          "BookingButton"
+        ],
+        "features": [
+          "Image lightbox",
+          "Video modal",
+          "360° viewer (iframe أو library)",
+          "Share button",
+          "Favorite button",
+          "Booking modal"
+        ]
+      },
+      "acceptance_criteria": [
+        "كل البيانات تعرض صح",
+        "Gallery يعمل",
+        "Map يعرض الموقع",
+        "يمكن حجز موعد",
+        "يمكن إضافة تعليق"
+      ]
+    },
+    
+    {
+      "id": "FRONT-005",
+      "phase": 1,
+      "category": "Frontend",
+      "title": "Search & Filters Page",
+      "description": "صفحة البحث والفلاتر",
+      "priority": "P1",
+      "estimated_hours": 8,
+      "completed": false,
+      "dependencies": ["FRONT-004", "API-005"],
+      "technical_details": {
+        "page": "/search",
+        "features": [
+          "Search bar",
+          "Filter sidebar (collapsible)",
+          "Results grid",
+          "Sort options",
+          "Map view toggle",
+          "Save search (للـ Phase 2)"
+        ],
+        "filters": [
+          "Property Type (checkboxes)",
+          "Price Range (slider)",
+          "Location (dropdown/autocomplete)",
+          "Rooms (select)",
+          "Area (slider)",
+          "Features (checkboxes)"
+        ],
+        "components": [
+          "SearchBar",
+          "FilterSidebar",
+          "PropertyGrid",
+          "PropertyCard",
+          "MapView",
+          "SortDropdown"
+        ]
+      },
+      "acceptance_criteria": [
+        "البحث يعمل",
+        "كل الفلاتر تعمل",
+        "النتائج تعرض صح",
+        "Map view يعمل",
+        "Sort يعمل"
+      ]
+    },
+    
+    {
+      "id": "FRONT-006",
+      "phase": 1,
+      "category": "Frontend",
+      "title": "User Dashboard",
+      "description": "لوحة تحكم المستخدم (Client)",
+      "priority": "P1",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["FRONT-002", "API-008"],
+      "technical_details": {
+        "pages": [
+          "/dashboard - نظرة عامة",
+          "/dashboard/profile - الملف الشخصي",
+          "/dashboard/favorites - المفضلة",
+          "/dashboard/bookings - الحجوزات"
+        ],
+        "features": [
+          "Sidebar navigation",
+          "Stats overview",
+          "Edit profile form",
+          "Favorites list",
+          "Bookings list (upcoming & past)"
+        ],
+        "components": [
+          "DashboardLayout",
+          "DashboardSidebar",
+          "ProfileForm",
+          "FavoritesList",
+          "BookingsList"
+        ]
+      },
+      "acceptance_criteria": [
+        "Dashboard يعرض بيانات المستخدم",
+        "يمكن تعديل الملف الشخصي",
+        "المفضلة تعرض",
+        "الحجوزات تعرض"
+      ]
+    },
+    
+    {
+      "id": "FRONT-007",
+      "phase": 1,
+      "category": "Frontend",
+      "title": "Agent Dashboard",
+      "description": "لوحة تحكم المسوق",
+      "priority": "P0",
+      "estimated_hours": 10,
+      "completed": false,
+      "dependencies": ["FRONT-006", "API-001", "API-009"],
+      "technical_details": {
+        "pages": [
+          "/agent/dashboard - نظرة عامة",
+          "/agent/properties - عقاراتي",
+          "/agent/properties/new - إضافة عقار",
+          "/agent/properties/[id]/edit - تعديل عقار",
+          "/agent/bookings - الحجوزات",
+          "/agent/analytics - الإحصائيات"
+        ],
+        "features": [
+          "Stats cards (properties, views, bookings, favorites)",
+          "Recent activity",
+          "Property management table",
+          "Add/Edit property form (multi-step)",
+          "Bookings calendar",
+          "Analytics charts"
+        ],
+        "components": [
+          "AgentLayout",
+          "StatsCards",
+          "PropertiesTable",
+          "PropertyForm (multi-step)",
+          "MediaUploader",
+          "BookingsCalendar",
+          "AnalyticsCharts"
+        ]
+      },
+      "acceptance_criteria": [
+        "Dashboard يعرض إحصائيات",
+        "يمكن إضافة عقار جديد",
+        "يمكن تعديل/حذف عقار",
+        "Bookings تعرض",
+        "Analytics تعمل"
+      ]
+    },
+    
+    {
+      "id": "FRONT-008",
+      "phase": 1,
+      "category": "Frontend",
+      "title": "Responsive Design & Mobile Optimization",
+      "description": "تحسين التصميم للموبايل",
+      "priority": "P1",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["FRONT-007"],
+      "technical_details": {
+        "tasks": [
+          "مراجعة كل الصفحات على أحجام شاشات مختلفة",
+          "تحسين touch gestures للموبايل",
+          "تحسين الـ navigation للموبايل (hamburger menu)",
+          "تحسين forms للموبايل",
+          "تحسين modals و popups",
+          "Performance optimization (lazy loading, code splitting)"
+        ],
+        "breakpoints": [
+          "Mobile: < 640px",
+          "Tablet: 640px - 1024px",
+          "Desktop: > 1024px"
+        ],
+        "testing": "اختبار على Chrome DevTools و real devices"
+      },
+      "acceptance_criteria": [
+        "كل الصفحات responsive",
+        "Touch gestures تعمل",
+        "Navigation سهل على الموبايل",
+        "Performance جيد"
+      ]
+    },
+    
+    {
+      "id": "DEPLOY-001",
+      "phase": 1,
+      "category": "Deployment",
+      "title": "Production Deployment Setup",
+      "description": "إعداد بيئة الإنتاج",
+      "priority": "P0",
+      "estimated_hours": 6,
+      "completed": false,
+      "dependencies": ["FRONT-008"],
+      "technical_details": {
+        "steps": [
+          "إعداد AWS/DigitalOcean servers",
+          "إعداد PostgreSQL production database",
+          "إعداد Redis",
+          "إعداد S3/R2 للملفات",
+          "إعداد Domain و SSL",
+          "إعداد Environment variables",
+          "إعداد CI/CD (GitHub Actions)",
+          "إعداد monitoring (Sentry)"
+        ],
+        "services": [
+          "Backend: PM2 أو Docker",
+          "Frontend: Vercel أو self-hosted",
+          "Database: Managed PostgreSQL",
+          "Storage: S3/R2"
+        ]
+      },
+      "acceptance_criteria": [
+        "الموقع يعمل على production",
+        "SSL مفعّل",
+        "CI/CD يعمل",
+        "Monitoring مفعّل"
+      ]
+    }
+  ]
+}

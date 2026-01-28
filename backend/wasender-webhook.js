@@ -1,0 +1,262 @@
+/**
+ * ========================================
+ * Wasender Webhook Handler
+ * ========================================
+ * يستقبل رسائل واتساب من Wasender ويرسل الردود
+ */
+
+const axios = require('axios');
+const botLogic = require('./bot-logic');
+
+// إعدادات Wasender
+const WASENDER_API_URL = process.env.WASENDER_API_URL || 'https://api.wasender.com';
+const WASENDER_API_KEY = process.env.WASENDER_API_KEY;
+const WASENDER_INSTANCE_ID = process.env.WASENDER_INSTANCE_ID;
+
+/**
+ * معالجة رسالة واردة من Wasender
+ */
+async function handleIncomingMessage(req, res) {
+    try {
+        const {
+            from,           // رقم المرسل
+            body,           // نص الرسالة
+            mediaUrl,       // رابط الوسائط (إن وجد)
+            messageType,    // نوع الرسالة: text, image, video, document
+            timestamp,      // وقت الإرسال
+            instanceId      // معرف الـ instance
+        } = req.body;
+
+        // التحقق من صحة الطلب
+        if (!from || !body) {
+            console.log('Invalid webhook payload:', req.body);
+            return res.status(400).json({ error: 'Invalid payload' });
+        }
+
+        // تنظيف رقم الهاتف
+        const phone = cleanPhoneNumber(from);
+
+        console.log(`📩 New message from ${phone}: ${body.substring(0, 50)}...`);
+
+        // معالجة الرسالة بواسطة البوت
+        const response = await botLogic.handleMessage(phone, body, mediaUrl);
+
+        // إرسال الرد
+        if (response.text) {
+            await sendWhatsAppMessage(phone, response.text);
+        }
+
+        // إذا كان هناك إشعار للمسوق
+        if (response.notifyMarketer) {
+            await sendWhatsAppMessage(
+                response.notifyMarketer.phone,
+                response.notifyMarketer.message
+            );
+        }
+
+        res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.error('Webhook error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+/**
+ * إرسال رسالة واتساب عبر Wasender
+ */
+async function sendWhatsAppMessage(to, message, mediaUrl = null) {
+    try {
+        const payload = {
+            to: cleanPhoneNumber(to),
+            message: message
+        };
+
+        // إضافة الوسائط إذا وجدت
+        if (mediaUrl) {
+            payload.mediaUrl = mediaUrl;
+        }
+
+        const response = await axios.post(
+            `${WASENDER_API_URL}/v1/messages/send`,
+            payload,
+            {
+                headers: {
+                    'Authorization': `Bearer ${WASENDER_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'X-Instance-ID': WASENDER_INSTANCE_ID
+                }
+            }
+        );
+
+        console.log(`✅ Message sent to ${to}`);
+        return response.data;
+
+    } catch (error) {
+        console.error('Send message error:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/**
+ * إرسال رسالة مع صورة
+ */
+async function sendWhatsAppImage(to, imageUrl, caption = '') {
+    try {
+        const response = await axios.post(
+            `${WASENDER_API_URL}/v1/messages/send-media`,
+            {
+                to: cleanPhoneNumber(to),
+                mediaUrl: imageUrl,
+                caption: caption,
+                mediaType: 'image'
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${WASENDER_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'X-Instance-ID': WASENDER_INSTANCE_ID
+                }
+            }
+        );
+
+        console.log(`✅ Image sent to ${to}`);
+        return response.data;
+
+    } catch (error) {
+        console.error('Send image error:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/**
+ * إرسال قائمة تفاعلية (Interactive List)
+ */
+async function sendInteractiveList(to, title, buttonText, sections) {
+    try {
+        const response = await axios.post(
+            `${WASENDER_API_URL}/v1/messages/send-list`,
+            {
+                to: cleanPhoneNumber(to),
+                title: title,
+                buttonText: buttonText,
+                sections: sections
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${WASENDER_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'X-Instance-ID': WASENDER_INSTANCE_ID
+                }
+            }
+        );
+
+        return response.data;
+
+    } catch (error) {
+        console.error('Send list error:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/**
+ * إرسال أزرار تفاعلية
+ */
+async function sendInteractiveButtons(to, message, buttons) {
+    try {
+        const response = await axios.post(
+            `${WASENDER_API_URL}/v1/messages/send-buttons`,
+            {
+                to: cleanPhoneNumber(to),
+                message: message,
+                buttons: buttons.map((btn, index) => ({
+                    id: `btn_${index}`,
+                    title: btn
+                }))
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${WASENDER_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'X-Instance-ID': WASENDER_INSTANCE_ID
+                }
+            }
+        );
+
+        return response.data;
+
+    } catch (error) {
+        console.error('Send buttons error:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/**
+ * تنظيف رقم الهاتف
+ */
+function cleanPhoneNumber(phone) {
+    if (!phone) return '';
+
+    // إزالة كل شيء عدا الأرقام
+    let cleaned = phone.replace(/\D/g, '');
+
+    // التأكد من وجود رمز الدولة
+    if (cleaned.startsWith('0')) {
+        cleaned = '966' + cleaned.substring(1);
+    } else if (!cleaned.startsWith('966')) {
+        cleaned = '966' + cleaned;
+    }
+
+    return cleaned;
+}
+
+/**
+ * التحقق من صحة webhook (للأمان)
+ */
+function verifyWebhook(req, res) {
+    const token = req.query['verify_token'];
+    const challenge = req.query['challenge'];
+
+    const expectedToken = process.env.WASENDER_WEBHOOK_SECRET;
+
+    if (token === expectedToken) {
+        console.log('✅ Webhook verified');
+        res.status(200).send(challenge);
+    } else {
+        console.log('❌ Webhook verification failed');
+        res.status(403).send('Forbidden');
+    }
+}
+
+/**
+ * الحصول على حالة الاتصال
+ */
+async function getConnectionStatus() {
+    try {
+        const response = await axios.get(
+            `${WASENDER_API_URL}/v1/instance/status`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${WASENDER_API_KEY}`,
+                    'X-Instance-ID': WASENDER_INSTANCE_ID
+                }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error('Status check error:', error.response?.data || error.message);
+        return { connected: false, error: error.message };
+    }
+}
+
+module.exports = {
+    handleIncomingMessage,
+    sendWhatsAppMessage,
+    sendWhatsAppImage,
+    sendInteractiveList,
+    sendInteractiveButtons,
+    verifyWebhook,
+    getConnectionStatus,
+    cleanPhoneNumber
+};

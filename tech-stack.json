@@ -1,0 +1,220 @@
+{
+  "project": {
+    "name": "RealEstate TikTok System",
+    "version": "1.0.0",
+    "description": "منصة عقارية اجتماعية بنمط TikTok مع ذكاء اصطناعي",
+    "license": "Proprietary"
+  },
+  
+  "tech_stack": {
+    "backend": {
+      "runtime": "Node.js 20.x LTS",
+      "framework": "Express.js 4.18+",
+      "language": "TypeScript 5.x",
+      "database": {
+        "primary": "PostgreSQL 16",
+        "cache": "Redis 7.x",
+        "search": "Elasticsearch 8.x (optional for Phase 2)"
+      },
+      "orm": "Prisma 5.x",
+      "authentication": "JWT + Passport.js",
+      "validation": "Joi / Zod",
+      "testing": "Jest + Supertest"
+    },
+    
+    "frontend_web": {
+      "framework": "Next.js 14 (App Router)",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS 3.x + shadcn/ui",
+      "state_management": "Zustand / React Context",
+      "forms": "React Hook Form + Zod",
+      "api_client": "Axios + TanStack Query",
+      "charts": "Recharts / Chart.js",
+      "video_player": "Video.js / React Player"
+    },
+    
+    "mobile": {
+      "framework": "React Native 0.73+ (Expo)",
+      "navigation": "React Navigation 6.x",
+      "state_management": "Zustand",
+      "ui_components": "React Native Paper / NativeBase",
+      "video": "react-native-video + expo-av",
+      "maps": "react-native-maps"
+    },
+    
+    "ai_ml": {
+      "recommendation_engine": "Python + FastAPI",
+      "ml_framework": "TensorFlow / PyTorch",
+      "nlp": "OpenAI API (GPT-4)",
+      "image_processing": "OpenCV",
+      "video_analysis": "FFmpeg + Custom ML Models"
+    },
+    
+    "storage": {
+      "media": "AWS S3 / Cloudflare R2",
+      "cdn": "CloudFlare CDN",
+      "video_streaming": "CloudFlare Stream / AWS MediaConvert"
+    },
+    
+    "infrastructure": {
+      "hosting": "AWS / DigitalOcean",
+      "containerization": "Docker + Docker Compose",
+      "orchestration": "Kubernetes (Phase 3)",
+      "ci_cd": "GitHub Actions",
+      "monitoring": "Sentry + Prometheus + Grafana"
+    },
+    
+    "communication": {
+      "real_time": "Socket.io",
+      "push_notifications": "Firebase Cloud Messaging",
+      "email": "SendGrid / AWS SES",
+      "sms": "Twilio"
+    }
+  },
+  
+  "coding_standards": {
+    "naming_conventions": {
+      "files": "kebab-case (user-controller.ts)",
+      "folders": "kebab-case (user-management)",
+      "classes": "PascalCase (UserController)",
+      "functions": "camelCase (getUserById)",
+      "constants": "UPPER_SNAKE_CASE (MAX_FILE_SIZE)",
+      "variables": "camelCase (userId, propertyData)"
+    },
+    
+    "code_style": {
+      "indentation": "2 spaces",
+      "quotes": "single quotes for strings",
+      "semicolons": "required",
+      "line_length": "max 100 characters",
+      "prettier": true,
+      "eslint": true
+    },
+    
+    "comments": {
+      "language": "Arabic for business logic, English for technical",
+      "function_docs": "JSDoc format required for all exported functions",
+      "inline_comments": "explain WHY, not WHAT",
+      "todo_format": "// TODO: [Priority] Description - @author"
+    },
+    
+    "git_conventions": {
+      "branch_naming": "type/task-id-short-description",
+      "examples": [
+        "feat/DB-001-database-schema",
+        "fix/API-012-auth-bug",
+        "docs/DOC-003-api-documentation"
+      ],
+      "commit_messages": {
+        "format": "type: [Task-ID] Description",
+        "types": ["feat", "fix", "docs", "style", "refactor", "test", "chore"],
+        "examples": [
+          "feat: [DB-001] Add PostgreSQL schema for users and properties",
+          "fix: [API-005] Resolve JWT token expiration issue",
+          "docs: [DOC-002] Update API documentation"
+        ]
+      }
+    },
+    
+    "api_design": {
+      "style": "RESTful",
+      "versioning": "/api/v1/",
+      "response_format": {
+        "success": {
+          "success": true,
+          "data": {},
+          "message": "Operation completed successfully"
+        },
+        "error": {
+          "success": false,
+          "error": {
+            "code": "ERROR_CODE",
+            "message": "Human readable message",
+            "details": {}
+          }
+        }
+      },
+      "status_codes": {
+        "200": "OK - Success",
+        "201": "Created",
+        "400": "Bad Request",
+        "401": "Unauthorized",
+        "403": "Forbidden",
+        "404": "Not Found",
+        "500": "Internal Server Error"
+      }
+    },
+    
+    "security": {
+      "password_hashing": "bcrypt (cost factor: 12)",
+      "jwt_expiration": "access: 15m, refresh: 7d",
+      "rate_limiting": "100 requests per 15 minutes per IP",
+      "input_validation": "Always validate and sanitize",
+      "sql_injection": "Use parameterized queries (Prisma ORM)",
+      "xss_prevention": "Sanitize HTML inputs",
+      "cors": "Whitelist specific origins only",
+      "helmet": "Use helmet.js for security headers"
+    }
+  },
+  
+  "environment_variables": {
+    "required": [
+      "DATABASE_URL",
+      "REDIS_URL",
+      "JWT_SECRET",
+      "JWT_REFRESH_SECRET",
+      "AWS_ACCESS_KEY_ID",
+      "AWS_SECRET_ACCESS_KEY",
+      "S3_BUCKET_NAME",
+      "OPENAI_API_KEY",
+      "SENDGRID_API_KEY",
+      "TWILIO_ACCOUNT_SID",
+      "TWILIO_AUTH_TOKEN"
+    ],
+    "format": ".env file, never commit to git"
+  },
+  
+  "testing_strategy": {
+    "unit_tests": "Jest - Coverage target: 80%",
+    "integration_tests": "Supertest for API endpoints",
+    "e2e_tests": "Playwright / Cypress (Phase 2)",
+    "test_naming": "describe('Component/Function', () => it('should do something', ...))"
+  },
+  
+  "performance_targets": {
+    "api_response_time": "< 200ms (95th percentile)",
+    "video_load_time": "< 2 seconds",
+    "page_load_time": "< 3 seconds (First Contentful Paint)",
+    "mobile_app_size": "< 50MB"
+  },
+  
+  "design_patterns": {
+    "backend": [
+      "MVC (Model-View-Controller)",
+      "Repository Pattern (Data Access)",
+      "Service Layer Pattern",
+      "Middleware Pattern",
+      "Factory Pattern (for complex object creation)"
+    ],
+    "frontend": [
+      "Component Composition",
+      "Container/Presentational Pattern",
+      "Custom Hooks Pattern",
+      "Context + Reducer Pattern"
+    ]
+  },
+  
+  "accessibility": {
+    "wcag_level": "AA",
+    "mobile_gestures": "Support for swipe, pinch-to-zoom",
+    "screen_readers": "ARIA labels required",
+    "rtl_support": "Full RTL support for Arabic"
+  },
+  
+  "localization": {
+    "supported_languages": ["ar", "en"],
+    "default_language": "ar",
+    "library": "i18next",
+    "fallback": "en"
+  }
+}
