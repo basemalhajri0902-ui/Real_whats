@@ -63,20 +63,44 @@ CREATE TABLE properties (
   longitude DECIMAL(11, 8),
   price DECIMAL(12,2) NOT NULL,
   price_per_meter DECIMAL(10,2),
-  area DECIMAL(10,2), -- بالمتر المربع
+  -- المساحات
+  area DECIMAL(10,2), -- المساحة الرئيسية بالمتر المربع
+  land_area DECIMAL(10,2), -- مساحة الأرض
+  building_area DECIMAL(10,2), -- مساحة البناء
+  -- الغرف والمرافق
   bedrooms INT,
   bathrooms INT,
   living_rooms INT,
+  kitchens INT DEFAULT 1,
+  -- تفاصيل البناء
   floors INT DEFAULT 1,
+  floor_number INT, -- رقم الدور للشقق
   building_age INT, -- عمر البناء بالسنوات
+  facade VARCHAR(20), -- الواجهة: شمالية، جنوبية، شرقية، غربية
+  -- تفاصيل العمارة
+  units_count INT, -- عدد الشقق
+  shops_count INT, -- عدد المحلات
+  annual_income DECIMAL(12,2), -- الدخل السنوي
+  occupancy_rate INT, -- نسبة التأجير %
+  -- تفاصيل الأرض
+  street_width DECIMAL(6,2), -- عرض الشارع
+  streets_count INT DEFAULT 1, -- عدد الشوارع
+  -- تفاصيل تجاري
+  facade_length DECIMAL(6,2), -- طول الواجهة
+  is_main_street BOOLEAN DEFAULT FALSE, -- على شارع رئيسي
+  -- المميزات والوسائط
   features JSONB DEFAULT '[]', -- مميزات: مسبح، حديقة، مصعد، إلخ
   images JSONB DEFAULT '[]', -- مصفوفة روابط الصور
   videos JSONB DEFAULT '[]', -- مصفوفة روابط الفيديو
-  status VARCHAR(20) DEFAULT 'available', -- available, sold, rented, reserved
+  external_links JSONB DEFAULT '[]', -- روابط خارجية (يوتيوب، خرائط)
+  -- الحالة والإحصائيات
+  status VARCHAR(20) DEFAULT 'pending', -- pending, available, sold, rented, reserved
   views_count INT DEFAULT 0,
   favorites_count INT DEFAULT 0,
+  -- العلاقات
   developer_id UUID REFERENCES developers(id) ON DELETE SET NULL,
   marketer_id UUID REFERENCES marketers(id) ON DELETE SET NULL,
+  owner_phone VARCHAR(20), -- هاتف المالك
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

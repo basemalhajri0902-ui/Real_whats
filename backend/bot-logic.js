@@ -15,8 +15,18 @@ const CONVERSATION_STATES = {
     WAITING_INTENT: 'waiting_intent',
     WAITING_PROPERTY_TYPE: 'waiting_property_type',
     WAITING_CITY: 'waiting_city',
+    WAITING_DISTRICT: 'waiting_district',
     WAITING_BUDGET: 'waiting_budget',
-    WAITING_PROPERTY_DETAILS: 'waiting_property_details',
+    // حالات إضافة عقار
+    WAITING_ADD_TYPE: 'waiting_add_type', // بيع/إيجار
+    WAITING_ADD_PROPERTY_TYPE: 'waiting_add_property_type',
+    WAITING_ADD_LOCATION: 'waiting_add_location',
+    WAITING_ADD_PRICE: 'waiting_add_price',
+    WAITING_ADD_AREA: 'waiting_add_area',
+    WAITING_ADD_SPECS: 'waiting_add_specs', // المواصفات الديناميكية
+    WAITING_ADD_FEATURES: 'waiting_add_features',
+    WAITING_ADD_MEDIA: 'waiting_add_media',
+    // حالات أخرى
     WAITING_IMAGES: 'waiting_images',
     CONNECTED_TO_MARKETER: 'connected_to_marketer'
 };
@@ -233,16 +243,186 @@ const MESSAGES = {
 
 0️⃣ رجوع`,
 
-    askPropertyRooms: `🛏️ *مواصفات العقار*
+    // ========================================
+    // المواصفات الديناميكية حسب نوع العقار
+    // ========================================
 
-اكتب التفاصيل:
-• عدد الغرف
-• عدد الحمامات
-• المميزات (مسبح، حديقة، مصعد...)
+    // 🏠 فيلا / دوبلكس / تاون هاوس
+    specsVilla: `🏠 *مواصفات الفيلا*
 
-مثال: 4 غرف، 3 حمامات، مسبح، حديقة
+📐 *المساحات:*
+أرسل: مساحة الأرض، مساحة البناء
+مثال: 450، 350
 
 0️⃣ رجوع`,
+
+    specsVillaRooms: `🛏️ *الغرف والمرافق:*
+
+أرسل بالترتيب:
+غرف نوم، حمامات، صالات، مطابخ
+مثال: 5، 4، 2، 1
+
+0️⃣ رجوع`,
+
+    specsVillaDetails: `🏗️ *تفاصيل البناء:*
+
+أرسل بالترتيب:
+عدد الأدوار، عمر البناء (سنوات)، الواجهة
+مثال: 3، 5، شمالية
+
+0️⃣ رجوع`,
+
+    specsVillaFeatures: `✨ *مميزات الفيلا:*
+
+اختر المميزات المتوفرة (أرسل الأرقام):
+
+1️⃣ مسبح            2️⃣ حديقة
+3️⃣ مصعد            4️⃣ سطح مستقل
+5️⃣ ملحق خارجي      6️⃣ غرفة سائق
+7️⃣ غرفة خادمة      8️⃣ مجلس خارجي
+9️⃣ تكييف مركزي     🔟 مطبخ جاهز
+
+مثال: 1، 2، 5، 9
+
+أو اكتب المميزات نصاً
+0️⃣ تخطي`,
+
+    // 🏢 شقة / استوديو
+    specsApartment: `🏢 *مواصفات الشقة*
+
+📐 *المساحة:*
+أرسل المساحة بالمتر المربع
+مثال: 150
+
+0️⃣ رجوع`,
+
+    specsApartmentRooms: `🛏️ *الغرف:*
+
+أرسل بالترتيب:
+غرف نوم، حمامات، صالة
+مثال: 3، 2، 1
+
+0️⃣ رجوع`,
+
+    specsApartmentDetails: `🏗️ *تفاصيل الشقة:*
+
+أرسل بالترتيب:
+رقم الدور، إجمالي الأدوار، عمر البناء
+مثال: 3، 5، 2
+
+0️⃣ رجوع`,
+
+    specsApartmentFeatures: `✨ *مميزات الشقة:*
+
+اختر المميزات (أرسل الأرقام):
+
+1️⃣ مصعد            2️⃣ موقف سيارة
+3️⃣ مدخل مستقل      4️⃣ بلكونة
+5️⃣ تكييف مركزي     6️⃣ سبليت
+7️⃣ مطبخ جاهز       8️⃣ مفروشة
+9️⃣ دش مركزي       🔟 خزان مستقل
+
+مثال: 1، 2، 4، 6
+
+0️⃣ تخطي`,
+
+    // 🏗️ عمارة سكنية
+    specsBuilding: `🏗️ *مواصفات العمارة*
+
+📐 *المساحات:*
+أرسل: مساحة الأرض، مساحة البناء
+مثال: 600، 2000
+
+0️⃣ رجوع`,
+
+    specsBuildingDetails: `🏢 *تفاصيل العمارة:*
+
+أرسل بالترتيب:
+عدد الأدوار، عدد الشقق، عدد المحلات، عمر البناء
+مثال: 4، 12، 2، 10
+
+0️⃣ رجوع`,
+
+    specsBuildingIncome: `💰 *الدخل:*
+
+أرسل بالترتيب:
+الدخل السنوي (ريال)، نسبة التأجير %
+مثال: 250000، 90
+
+0️⃣ تخطي`,
+
+    specsBuildingFeatures: `✨ *مميزات العمارة:*
+
+اختر المميزات (أرسل الأرقام):
+
+1️⃣ مصعد            2️⃣ مواقف سيارات
+3️⃣ حارس            4️⃣ خزانات مياه
+5️⃣ مكيفات          6️⃣ صك إلكتروني
+7️⃣ رخصة بناء       8️⃣ مؤجرة بالكامل
+
+مثال: 1، 2، 6
+
+0️⃣ تخطي`,
+
+    // 🌍 أرض
+    specsLand: `🌍 *مواصفات الأرض*
+
+📐 *المساحة:*
+أرسل المساحة بالمتر المربع
+مثال: 750
+
+0️⃣ رجوع`,
+
+    specsLandDetails: `📍 *تفاصيل الأرض:*
+
+أرسل بالترتيب:
+عرض الشارع (متر)، عدد الشوارع، الواجهة
+مثال: 20، 2، شمالية
+
+0️⃣ رجوع`,
+
+    specsLandFeatures: `✨ *مميزات الأرض:*
+
+اختر المميزات (أرسل الأرقام):
+
+1️⃣ زاوية            2️⃣ على شارعين
+3️⃣ على ثلاث شوارع  4️⃣ مسورة
+5️⃣ صك إلكتروني     6️⃣ رخصة بناء
+7️⃣ قريبة من خدمات  8️⃣ داخل حي راقي
+
+مثال: 1، 5، 7
+
+0️⃣ تخطي`,
+
+    // 🏪 محل / مكتب
+    specsCommercial: `🏪 *مواصفات المحل/المكتب*
+
+📐 *المساحة:*
+أرسل: المساحة (م²)، طول الواجهة (متر)
+مثال: 80، 6
+
+0️⃣ رجوع`,
+
+    specsCommercialDetails: `📍 *التفاصيل:*
+
+أرسل بالترتيب:
+رقم الدور، على شارع رئيسي (نعم/لا)
+مثال: ارضي، نعم
+
+0️⃣ رجوع`,
+
+    specsCommercialFeatures: `✨ *المميزات:*
+
+اختر (أرسل الأرقام):
+
+1️⃣ واجهة زجاجية    2️⃣ تكييف
+3️⃣ حمام خاص        4️⃣ مستودع
+5️⃣ موقف سيارات     6️⃣ لوحة إعلانية
+7️⃣ كهرباء تجارية   8️⃣ ديكور جاهز
+
+مثال: 1، 2، 3
+
+0️⃣ تخطي`,
 
     askPropertyImages: `📸 *وسائط العقار*
 
@@ -913,25 +1093,218 @@ class BotLogic {
     }
 
     /**
-     * معالجة الصور المرفقة
+     * معالجة الصور والوسائط المرفقة
      */
     async handleImages(mediaUrl, state, customer) {
-        if (!mediaUrl) {
-            return { text: 'يرجى إرسال صورة للعقار 📸' };
+        // حفظ رابط الوسائط
+        const media = state.media || { images: [], videos: [], links: [] };
+
+        if (mediaUrl) {
+            // تحديد نوع الوسائط
+            const lower = mediaUrl.toLowerCase();
+            if (lower.match(/\.(jpg|jpeg|png|gif|webp)/) || lower.includes('image')) {
+                media.images.push(mediaUrl);
+            } else if (lower.match(/\.(mp4|mov|avi|webm)/) || lower.includes('video')) {
+                media.videos.push(mediaUrl);
+            } else if (lower.includes('youtube') || lower.includes('tiktok') || lower.includes('instagram') || lower.includes('maps.google')) {
+                media.links.push(mediaUrl);
+            } else {
+                media.images.push(mediaUrl); // افتراضي = صورة
+            }
         }
 
-        // حفظ رابط الصورة
-        const images = state.images || [];
-        images.push(mediaUrl);
+        const totalMedia = media.images.length + media.videos.length + media.links.length;
 
-        if (images.length >= 10) {
-            return this.finalizeProperty(state, customer);
+        if (totalMedia >= 10) {
+            return this.finalizeProperty(state, customer, media);
         }
 
         return {
-            text: `تم استلام الصورة ${images.length}/10 ✅\n\nأرسل صورة أخرى أو اكتب "تم" للانتهاء`,
-            newState: { ...state, images }
+            text: `✅ تم استلام ${totalMedia} ملف
+
+📷 صور: ${media.images.length}
+🎥 فيديو: ${media.videos.length}
+🔗 روابط: ${media.links.length}
+
+أرسل المزيد أو اكتب *"تم"* للانتهاء`,
+            newState: { ...state, media }
         };
+    }
+
+    /**
+     * إتمام إضافة العقار وحفظه في قاعدة البيانات
+     */
+    async finalizeProperty(state, customer, media = null) {
+        try {
+            const propertyMedia = media || state.media || { images: [], videos: [], links: [] };
+
+            // توليد كود فريد للعقار
+            const propertyCode = this.generatePropertyCode();
+
+            // تحضير بيانات العقار (تتوافق مع جدول properties في Supabase)
+            const propertyData = {
+                property_code: propertyCode,
+                title: `${state.propertyType} في ${state.city}`,
+                property_type: state.propertyType,
+                transaction_type: state.intent === 'rent' ? 'rent' : 'sale',
+                city: state.city,
+                district: state.district || null,
+                location: state.location || null,
+                price: parseInt(state.price) || 0,
+                // المساحات
+                area: parseFloat(state.area) || null,
+                land_area: parseFloat(state.landArea) || null,
+                building_area: parseFloat(state.buildingArea) || null,
+                // الغرف والمرافق
+                bedrooms: parseInt(state.bedrooms) || null,
+                bathrooms: parseInt(state.bathrooms) || null,
+                living_rooms: parseInt(state.livingRooms) || null,
+                kitchens: parseInt(state.kitchens) || null,
+                // تفاصيل البناء
+                floors: parseInt(state.floors) || null,
+                floor_number: parseInt(state.floorNumber) || null,
+                building_age: parseInt(state.buildingAge) || null,
+                facade: state.facade || null,
+                // تفاصيل العمارة
+                units_count: parseInt(state.unitsCount) || null,
+                shops_count: parseInt(state.shopsCount) || null,
+                annual_income: parseFloat(state.annualIncome) || null,
+                occupancy_rate: parseInt(state.occupancyRate) || null,
+                // تفاصيل الأرض
+                street_width: parseFloat(state.streetWidth) || null,
+                streets_count: parseInt(state.streetsCount) || null,
+                // تفاصيل تجاري
+                facade_length: parseFloat(state.facadeLength) || null,
+                is_main_street: state.isMainStreet || null,
+                // المميزات
+                features: state.features || [],
+                description: state.description || `${state.propertyType} ${state.intent === 'rent' ? 'للإيجار' : 'للبيع'} في ${state.city}`,
+                // الوسائط
+                images: propertyMedia.images,
+                videos: propertyMedia.videos,
+                status: 'pending' // في انتظار المراجعة
+            };
+
+            // حفظ العقار في قاعدة البيانات
+            const { data: property, error } = await supabase
+                .from('properties')
+                .insert(propertyData)
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Property insert error:', error);
+                return {
+                    text: `عذراً، حدث خطأ في حفظ العقار 😔
+يرجى المحاولة مرة أخرى أو التواصل مع الدعم الفني.
+
+0️⃣ القائمة الرئيسية`,
+                    newState: { state: CONVERSATION_STATES.WAITING_INTENT }
+                };
+            }
+
+            console.log(`✅ Property saved: ${propertyCode}`, property);
+
+            return {
+                text: MESSAGES.propertyAdded(propertyCode),
+                newState: { state: CONVERSATION_STATES.WAITING_INTENT }
+            };
+
+        } catch (error) {
+            console.error('Finalize property error:', error);
+            return {
+                text: `عذراً، حدث خطأ غير متوقع 😔
+يرجى المحاولة مرة أخرى.
+
+0️⃣ القائمة الرئيسية`,
+                newState: { state: CONVERSATION_STATES.WAITING_INTENT }
+            };
+        }
+    }
+
+    /**
+     * توليد كود فريد للعقار
+     */
+    generatePropertyCode() {
+        const year = new Date().getFullYear();
+        const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+        return `PRO-${year}-${random}`;
+    }
+
+    /**
+     * تحديد فئة العقار
+     */
+    getPropertyCategory(propertyType) {
+        const villaTypes = ['فيلا', 'دوبلكس', 'تاون هاوس'];
+        const apartmentTypes = ['شقة', 'استوديو'];
+        const buildingTypes = ['عمارة سكنية', 'عمارة'];
+        const landTypes = ['أرض سكنية', 'أرض تجارية', 'أرض'];
+        const commercialTypes = ['محل تجاري', 'مكتب', 'محل'];
+
+        if (villaTypes.includes(propertyType)) return 'villa';
+        if (apartmentTypes.includes(propertyType)) return 'apartment';
+        if (buildingTypes.includes(propertyType)) return 'building';
+        if (landTypes.includes(propertyType)) return 'land';
+        if (commercialTypes.includes(propertyType)) return 'commercial';
+        return 'villa'; // افتراضي
+    }
+
+    /**
+     * الحصول على رسالة المواصفات حسب الفئة والمرحلة
+     */
+    getSpecsMessage(category, step) {
+        const specsFlow = {
+            villa: ['specsVilla', 'specsVillaRooms', 'specsVillaDetails', 'specsVillaFeatures'],
+            apartment: ['specsApartment', 'specsApartmentRooms', 'specsApartmentDetails', 'specsApartmentFeatures'],
+            building: ['specsBuilding', 'specsBuildingDetails', 'specsBuildingIncome', 'specsBuildingFeatures'],
+            land: ['specsLand', 'specsLandDetails', 'specsLandFeatures'],
+            commercial: ['specsCommercial', 'specsCommercialDetails', 'specsCommercialFeatures']
+        };
+
+        const flow = specsFlow[category] || specsFlow.villa;
+        const messageKey = flow[step] || flow[0];
+        return MESSAGES[messageKey] || MESSAGES.specsVilla;
+    }
+
+    /**
+     * تحويل أرقام المميزات إلى نصوص
+     */
+    parseFeatures(text, category) {
+        const featuresMap = {
+            villa: {
+                '1': 'مسبح', '2': 'حديقة', '3': 'مصعد', '4': 'سطح مستقل',
+                '5': 'ملحق خارجي', '6': 'غرفة سائق', '7': 'غرفة خادمة',
+                '8': 'مجلس خارجي', '9': 'تكييف مركزي', '10': 'مطبخ جاهز'
+            },
+            apartment: {
+                '1': 'مصعد', '2': 'موقف سيارة', '3': 'مدخل مستقل', '4': 'بلكونة',
+                '5': 'تكييف مركزي', '6': 'سبليت', '7': 'مطبخ جاهز',
+                '8': 'مفروشة', '9': 'دش مركزي', '10': 'خزان مستقل'
+            },
+            building: {
+                '1': 'مصعد', '2': 'مواقف سيارات', '3': 'حارس', '4': 'خزانات مياه',
+                '5': 'مكيفات', '6': 'صك إلكتروني', '7': 'رخصة بناء', '8': 'مؤجرة بالكامل'
+            },
+            land: {
+                '1': 'زاوية', '2': 'على شارعين', '3': 'على ثلاث شوارع', '4': 'مسورة',
+                '5': 'صك إلكتروني', '6': 'رخصة بناء', '7': 'قريبة من خدمات', '8': 'داخل حي راقي'
+            },
+            commercial: {
+                '1': 'واجهة زجاجية', '2': 'تكييف', '3': 'حمام خاص', '4': 'مستودع',
+                '5': 'موقف سيارات', '6': 'لوحة إعلانية', '7': 'كهرباء تجارية', '8': 'ديكور جاهز'
+            }
+        };
+
+        const map = featuresMap[category] || featuresMap.villa;
+        const numbers = text.match(/\d+/g) || [];
+        const features = numbers.map(n => map[n]).filter(Boolean);
+
+        // إذا لم توجد أرقام، استخدم النص كما هو
+        if (features.length === 0 && text !== '0' && text !== 'تخطي') {
+            return [text];
+        }
+
+        return features;
     }
 
     /**
