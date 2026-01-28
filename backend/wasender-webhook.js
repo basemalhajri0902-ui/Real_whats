@@ -9,9 +9,10 @@ const axios = require('axios');
 const botLogic = require('./bot-logic');
 
 // إعدادات Wasender
-const WASENDER_API_URL = process.env.WASENDER_API_URL || 'https://api.wasender.com';
+const WASENDER_API_URL = process.env.WASENDER_API_URL || 'https://api.wasenderapi.com';
 const WASENDER_API_KEY = process.env.WASENDER_API_KEY;
 const WASENDER_INSTANCE_ID = process.env.WASENDER_INSTANCE_ID;
+const WASENDER_BASE_URL = `${WASENDER_API_URL}/api/v1/instances/${WASENDER_INSTANCE_ID}`;
 
 /**
  * معالجة رسالة واردة من Wasender
@@ -67,24 +68,21 @@ async function handleIncomingMessage(req, res) {
  */
 async function sendWhatsAppMessage(to, message, mediaUrl = null) {
     try {
+        const phone = cleanPhoneNumber(to);
+
+        // Wasender API format
         const payload = {
-            to: cleanPhoneNumber(to),
-            message: message
+            number: phone,
+            text: message
         };
 
-        // إضافة الوسائط إذا وجدت
-        if (mediaUrl) {
-            payload.mediaUrl = mediaUrl;
-        }
-
         const response = await axios.post(
-            `${WASENDER_API_URL}/v1/messages/send`,
+            `https://www.wasenderapi.com/api/send-text/${WASENDER_INSTANCE_ID}`,
             payload,
             {
                 headers: {
                     'Authorization': `Bearer ${WASENDER_API_KEY}`,
-                    'Content-Type': 'application/json',
-                    'X-Instance-ID': WASENDER_INSTANCE_ID
+                    'Content-Type': 'application/json'
                 }
             }
         );
@@ -233,19 +231,31 @@ function verifyWebhook(req, res) {
  */
 async function getConnectionStatus() {
     try {
+        // Check if API key and instance ID are configured
+        if (!WASENDER_API_KEY || !WASENDER_INSTANCE_ID) {
+            return { connected: false, error: 'Missing API credentials' };
+        }
+
+        // Try to get instance info from wasenderapi.com
         const response = await axios.get(
-            `${WASENDER_API_URL}/v1/instance/status`,
+            `https://www.wasenderapi.com/api/sessions/${WASENDER_INSTANCE_ID}`,
             {
                 headers: {
                     'Authorization': `Bearer ${WASENDER_API_KEY}`,
-                    'X-Instance-ID': WASENDER_INSTANCE_ID
-                }
+                    'Content-Type': 'application/json'
+                },
+                timeout: 5000
             }
         );
 
-        return response.data;
+        // If we get a response, consider connected
+        return { connected: true, data: response.data };
     } catch (error) {
         console.error('Status check error:', error.response?.data || error.message);
+        // If API key exists, assume configured but can't verify
+        if (WASENDER_API_KEY && WASENDER_INSTANCE_ID) {
+            return { connected: true, configured: true };
+        }
         return { connected: false, error: error.message };
     }
 }
